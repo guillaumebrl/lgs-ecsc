@@ -1,0 +1,209 @@
+CREATE TABLE IF NOT EXISTS settings (
+  id TINYINT UNSIGNED PRIMARY KEY DEFAULT 1,
+  school_name VARCHAR(150) NOT NULL DEFAULT 'Mon établissement',
+  school_address VARCHAR(255) NULL,
+  grading_mode ENUM('flexible','forced_20') NOT NULL DEFAULT 'flexible',
+  decimals TINYINT UNSIGNED NOT NULL DEFAULT 2,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT IGNORE INTO settings(id) VALUES(1);
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('admin','principal','teacher') NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS school_years (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(30) NOT NULL UNIQUE,
+  starts_on DATE NOT NULL,
+  ends_on DATE NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT FALSE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS periods (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  school_year_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  starts_on DATE NOT NULL,
+  ends_on DATE NOT NULL,
+  entry_opens_on DATE NULL,
+  entry_closes_on DATE NULL,
+  status ENUM('draft','open','closed','validated') NOT NULL DEFAULT 'draft',
+  sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  CONSTRAINT fk_period_year FOREIGN KEY(school_year_id) REFERENCES school_years(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS classes (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  school_year_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  level VARCHAR(60) NULL,
+  principal_user_id BIGINT UNSIGNED NULL,
+  UNIQUE KEY uq_class_year_name(school_year_id,name),
+  FOREIGN KEY(school_year_id) REFERENCES school_years(id) ON DELETE CASCADE,
+  FOREIGN KEY(principal_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS students (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  registration_number VARCHAR(50) NOT NULL UNIQUE,
+  last_name VARCHAR(100) NOT NULL,
+  first_name VARCHAR(100) NOT NULL,
+  birth_date DATE NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS enrollments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  student_id BIGINT UNSIGNED NOT NULL,
+  class_id BIGINT UNSIGNED NOT NULL,
+  UNIQUE KEY uq_enrollment(student_id,class_id),
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS subjects (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  coefficient DECIMAL(6,2) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS courses (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  class_id BIGINT UNSIGNED NOT NULL,
+  subject_id BIGINT UNSIGNED NOT NULL,
+  group_name VARCHAR(80) NULL,
+  UNIQUE KEY uq_course(class_id,subject_id,group_name),
+  FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS course_teachers (
+  course_id BIGINT UNSIGNED NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  assignment_role ENUM('lead','co_teacher','substitute','contributor') NOT NULL DEFAULT 'lead',
+  can_edit_shared BOOLEAN NOT NULL DEFAULT FALSE,
+  starts_on DATE NULL,
+  ends_on DATE NULL,
+  PRIMARY KEY(course_id,user_id),
+  FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS assessments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  course_id BIGINT UNSIGNED NOT NULL,
+  period_id BIGINT UNSIGNED NOT NULL,
+  author_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(150) NOT NULL,
+  assessment_date DATE NOT NULL,
+  scale DECIMAL(7,2) NOT NULL DEFAULT 20,
+  normalize_to ENUM('none','10','20') NOT NULL DEFAULT '20',
+  coefficient DECIMAL(6,2) NOT NULL DEFAULT 1,
+  status ENUM('draft','published','closed','cancelled') NOT NULL DEFAULT 'published',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY(period_id) REFERENCES periods(id) ON DELETE CASCADE,
+  FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS grades (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  assessment_id BIGINT UNSIGNED NOT NULL,
+  student_id BIGINT UNSIGNED NOT NULL,
+  score DECIMAL(7,2) NULL,
+  special_status ENUM('absent','excused','missing','not_graded') NULL,
+  comment VARCHAR(255) NULL,
+  updated_by BIGINT UNSIGNED NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_grade(assessment_id,student_id),
+  FOREIGN KEY(assessment_id) REFERENCES assessments(id) ON DELETE CASCADE,
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY(updated_by) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS subject_comments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  student_id BIGINT UNSIGNED NOT NULL,
+  course_id BIGINT UNSIGNED NOT NULL,
+  period_id BIGINT UNSIGNED NOT NULL,
+  author_id BIGINT UNSIGNED NOT NULL,
+  comment TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_subject_comment(student_id,course_id,period_id),
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY(period_id) REFERENCES periods(id) ON DELETE CASCADE,
+  FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS councils (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  student_id BIGINT UNSIGNED NOT NULL,
+  class_id BIGINT UNSIGNED NOT NULL,
+  period_id BIGINT UNSIGNED NOT NULL,
+  general_comment TEXT NULL,
+  mention VARCHAR(100) NULL,
+  decision_text VARCHAR(255) NULL,
+  validated_at DATETIME NULL,
+  validated_by BIGINT UNSIGNED NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_council(student_id,class_id,period_id),
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY(period_id) REFERENCES periods(id) ON DELETE CASCADE,
+  FOREIGN KEY(validated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  student_id BIGINT UNSIGNED NOT NULL,
+  period_id BIGINT UNSIGNED NOT NULL,
+  kind ENUM('absence','late') NOT NULL,
+  occurred_at DATETIME NOT NULL,
+  duration_minutes INT UNSIGNED NULL,
+  justified BOOLEAN NOT NULL DEFAULT FALSE,
+  reason VARCHAR(255) NULL,
+  author_id BIGINT UNSIGNED NOT NULL,
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+  FOREIGN KEY(period_id) REFERENCES periods(id) ON DELETE CASCADE,
+  FOREIGN KEY(author_id) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bulletin_snapshots (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  student_id BIGINT UNSIGNED NOT NULL,
+  class_id BIGINT UNSIGNED NOT NULL,
+  period_id BIGINT UNSIGNED NOT NULL,
+  version INT UNSIGNED NOT NULL,
+  payload_json LONGTEXT NOT NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_bulletin_version(student_id,class_id,period_id,version),
+  FOREIGN KEY(student_id) REFERENCES students(id),
+  FOREIGN KEY(class_id) REFERENCES classes(id),
+  FOREIGN KEY(period_id) REFERENCES periods(id),
+  FOREIGN KEY(created_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NULL,
+  action VARCHAR(80) NOT NULL,
+  entity_type VARCHAR(80) NOT NULL,
+  entity_id BIGINT UNSIGNED NULL,
+  before_json LONGTEXT NULL,
+  after_json LONGTEXT NULL,
+  ip_address VARCHAR(45) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_created(created_at),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
