@@ -1,0 +1,19 @@
+Options -Indexes
+RewriteEngine On
+
+# Interdire tout accès web aux fichiers et répertoires internes.
+RewriteRule (^|/)\.(?!well-known/) - [F,L]
+RewriteRule ^(?:app|database|storage)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:README\.md|DEPLOIEMENT_HOSTINGER\.md)$ - [F,L,NC]
+
+# Servir uniquement la surface publique de l'application.
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+RewriteRule ^(.+)$ public/$1 [L]
+
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^$ public/index.php [L]
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.+)$ public/index.php [QSA,L]
+

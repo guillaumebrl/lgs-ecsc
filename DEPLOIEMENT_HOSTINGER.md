@@ -32,11 +32,9 @@ Ne commitez jamais le fichier `school-app/.env`. Il contient les mots de passe e
 1. Ouvrez **Sites web → Gérer → Git**.
 2. Ajoutez le dépôt et la branche `main`.
 3. Pour un dépôt privé, ajoutez à GitHub/GitLab la clé de déploiement fournie par Hostinger.
-4. Choisissez un dossier de déploiement temporaire, par exemple `school-app-source`, car le dépôt contient un sous-dossier `public`.
+4. Choisissez `public_html` comme dossier racine de déploiement. Le fichier `.htaccess` placé à la racine protège les fichiers internes et redirige les requêtes vers `public`.
 5. Lancez le déploiement.
-6. Faites pointer la racine publique du domaine vers `school-app-source/public` si hPanel offre ce réglage.
-
-Si votre offre ne permet pas de modifier la racine publique, utilisez la méthode B ou placez uniquement le contenu de `school-app/public` dans `public_html` et les dossiers `app`, `database` et `storage` un niveau au-dessus. Dans ce second cas, adaptez les chemins `dirname(__DIR__)` ou utilisez un lien symbolique seulement si Hostinger l'autorise.
+6. Vérifiez après déploiement que le domaine ouvre l'application et qu'une URL telle que `/database/schema.sql` renvoie bien une interdiction.
 
 ### Méthode B — SSH et clone Git
 
@@ -110,4 +108,3 @@ Sauvegardez toujours la base et les documents avant une mise à jour. Les évolu
 ## 10. GitHub Actions (optionnel)
 
 Pour automatiser le déploiement, le plus simple reste l'intégration Git de Hostinger. N'ajoutez pas de mots de passe FTP ou SSH au dépôt : placez-les uniquement dans les secrets du fournisseur Git. Pour une application manipulant des données scolaires, imposez une branche protégée et une validation humaine avant production.
-
