@@ -7,7 +7,13 @@ Application web légère de gestion scolaire compatible avec un hébergement PHP
 - Comptes administrateur, professeur principal/instituteur et enseignant.
 - Années scolaires et périodes libres (trimestres, semestres ou autres).
 - Classes, matières, élèves et inscriptions.
+- Dossiers familiaux, deux responsables légaux, coordonnées et situation familiale.
+- Formule d’adressage configurable sur les bulletins, avec gestion des noms différents.
 - Plusieurs enseignants par cours avec rôles distincts.
+- Qualifications cumulables : enseignant et professeur principal/instituteur.
+- Accès aux notes limité aux matières et groupes explicitement affectés.
+- Groupes d'élèves configurables et reliés aux cours.
+- Modification administrative des comptes, matières et coefficients.
 - Évaluations titrées, coefficients et barèmes libres.
 - Normalisation sur 10 ou 20, ou notation sur 20 imposée par l'administration.
 - Statuts absent, dispensé, non rendu et non noté.
@@ -42,4 +48,3 @@ Le guide détaillé se trouve dans [`DEPLOIEMENT_HOSTINGER.md`](DEPLOIEMENT_HOST
 ## Important avant une utilisation réelle
 
 Cette livraison est un socle MVP. Avant de l'utiliser avec de vraies données scolaires, prévoir une recette métier, une revue de sécurité, des sauvegardes testées, la conformité réglementaire du pays, ainsi qu'un véritable moteur PDF côté serveur si des archives PDF binaires immuables sont exigées. La version actuelle produit une mise en page A4 que le navigateur enregistre en PDF.
-

@@ -94,6 +94,22 @@ git pull --ff-only origin main
 
 Sauvegardez toujours la base et les documents avant une mise à jour. Les évolutions de schéma devront être fournies sous forme de migrations versionnées ; ne réexécutez pas aveuglément des scripts destructifs.
 
+### Mise à jour 002 — Familles et responsables légaux
+
+Après avoir sauvegardé la base, ouvrez **phpMyAdmin** dans hPanel, sélectionnez la base de l'application, puis utilisez l'onglet **Importer** pour exécuter une seule fois :
+
+`database/migrations/002_families.sql`
+
+Cette migration ajoute les familles, les responsables légaux et le lien entre une famille et ses enfants. Ne la relancez pas après son exécution réussie.
+
+### Mise à jour 003 — Qualifications, droits et groupes
+
+Avant de téléverser le code de cette version, sauvegardez la base puis importez une seule fois dans phpMyAdmin :
+
+`database/migrations/003_permissions_groups_admin_edit.sql`
+
+Cette migration ajoute les qualifications cumulables des personnels, les groupes d'élèves et l'affectation d'un groupe à un cours. Après le déploiement, utilisez **Modifier → Comptes** pour vérifier les qualifications, puis **Modifier → Groupes** pour constituer les groupes et les associer aux cours.
+
 ## 9. Contrôles après déploiement
 
 - HTTPS est forcé et aucune alerte de certificat n'apparaît.

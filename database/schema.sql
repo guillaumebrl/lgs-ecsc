@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(190) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   role ENUM('admin','principal','teacher') NOT NULL,
+  can_teach BOOLEAN NOT NULL DEFAULT FALSE,
+  can_be_principal BOOLEAN NOT NULL DEFAULT FALSE,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -50,14 +52,45 @@ CREATE TABLE IF NOT EXISTS classes (
   FOREIGN KEY(principal_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS families (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  family_label VARCHAR(150) NOT NULL,
+  family_situation ENUM('married','civil_union','cohabiting','separated','divorced','single_parent','widowed','other') NOT NULL DEFAULT 'married',
+  addressee_mode ENUM('shared_couple','individual_names','custom') NOT NULL DEFAULT 'individual_names',
+  custom_addressee VARCHAR(255) NULL,
+  address_line1 VARCHAR(255) NULL,
+  address_line2 VARCHAR(255) NULL,
+  postal_code VARCHAR(20) NULL,
+  city VARCHAR(120) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS guardians (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  family_id BIGINT UNSIGNED NOT NULL,
+  title ENUM('M.','Mme','Mx','Autre') NOT NULL DEFAULT 'M.',
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  relationship VARCHAR(80) NOT NULL DEFAULT 'Parent',
+  email VARCHAR(190) NULL,
+  phone VARCHAR(40) NULL,
+  legal_guardian BOOLEAN NOT NULL DEFAULT TRUE,
+  receives_bulletin BOOLEAN NOT NULL DEFAULT TRUE,
+  display_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  FOREIGN KEY(family_id) REFERENCES families(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS students (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   registration_number VARCHAR(50) NOT NULL UNIQUE,
   last_name VARCHAR(100) NOT NULL,
   first_name VARCHAR(100) NOT NULL,
   birth_date DATE NULL,
+  family_id BIGINT UNSIGNED NULL,
   active BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(family_id) REFERENCES families(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS enrollments (
@@ -67,6 +100,22 @@ CREATE TABLE IF NOT EXISTS enrollments (
   UNIQUE KEY uq_enrollment(student_id,class_id),
   FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
   FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS class_groups (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  class_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(80) NOT NULL,
+  UNIQUE KEY uq_class_group(class_id,name),
+  FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS group_students (
+  group_id BIGINT UNSIGNED NOT NULL,
+  student_id BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY(group_id,student_id),
+  FOREIGN KEY(group_id) REFERENCES class_groups(id) ON DELETE CASCADE,
+  FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS subjects (
@@ -80,9 +129,11 @@ CREATE TABLE IF NOT EXISTS courses (
   class_id BIGINT UNSIGNED NOT NULL,
   subject_id BIGINT UNSIGNED NOT NULL,
   group_name VARCHAR(80) NULL,
+  class_group_id BIGINT UNSIGNED NULL,
   UNIQUE KEY uq_course(class_id,subject_id,group_name),
   FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
-  FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+  FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+  FOREIGN KEY(class_group_id) REFERENCES class_groups(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS course_teachers (
@@ -206,4 +257,3 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   INDEX idx_audit_created(created_at),
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-

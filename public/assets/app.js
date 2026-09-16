@@ -21,4 +21,30 @@ document.querySelector('[data-projector]')?.addEventListener('click', async () =
 document.querySelector('[data-privacy]')?.addEventListener('click', event => {
   document.body.classList.toggle('privacy'); event.target.textContent=document.body.classList.contains('privacy')?'Afficher les données':'Masquer les données';
 });
-
+document.querySelector('[data-addressee-mode]')?.addEventListener('change', event => {
+  const custom = document.querySelector('[data-custom-addressee]');
+  if (custom) custom.hidden = event.target.value !== 'custom';
+});
+const familyShortcut = document.querySelector('.families-shortcut');
+const sidebarNav = document.querySelector('.sidebar nav');
+if (familyShortcut && sidebarNav) {
+  const link = document.createElement('a');
+  link.href = '?page=families';
+  link.className = new URLSearchParams(location.search).get('page') === 'families' ? 'active' : '';
+  link.innerHTML = '⌂ <span>Familles</span>';
+  sidebarNav.children[1]?.after(link);
+}
+const adminShortcut = document.querySelector('.admin-shortcut');
+if (adminShortcut && sidebarNav) {
+  const link = document.createElement('a');
+  link.href = '?page=admin-management';
+  link.className = new URLSearchParams(location.search).get('page') === 'admin-management' ? 'active' : '';
+  link.innerHTML = '✎ <span>Modifier</span>';
+  sidebarNav.append(link);
+}
+document.querySelector('[data-family-situation]')?.addEventListener('change', event => {
+  const mode = document.querySelector('[data-addressee-mode]');
+  if (!mode) return;
+  mode.value = ['married', 'civil_union', 'cohabiting'].includes(event.target.value) ? 'shared_couple' : 'individual_names';
+  mode.dispatchEvent(new Event('change'));
+});
