@@ -1,6 +1,6 @@
-# École Pilot
+# lgs-ecsc
 
-Application web légère de gestion scolaire compatible avec un hébergement PHP/MySQL Hostinger.
+Application web légère de gestion scolaire **lgs-ecsc**, compatible avec un hébergement PHP/MySQL Hostinger.
 
 ## Fonctions disponibles
 
@@ -12,8 +12,13 @@ Application web légère de gestion scolaire compatible avec un hébergement PHP
 - Plusieurs enseignants par cours avec rôles distincts.
 - Qualifications cumulables : enseignant et professeur principal/instituteur.
 - Accès aux notes limité aux matières et groupes explicitement affectés.
-- Groupes d'élèves configurables et reliés aux cours.
+- Groupes d'élèves configurables par classe.
+- Affectations pédagogiques par classe ou groupe avec professeur, co-professeur, coefficient de matière et ordre du bulletin.
 - Modification administrative des comptes, matières et coefficients.
+- Profil Direction avec validation et export individuel ou groupé des bulletins.
+- Qualifications cumulables : enseignement, professeur principal/instituteur, vie scolaire et direction.
+- Espace « Mes élèves », suivi des absences et retards, changement obligatoire du mot de passe.
+- Préparation automatisée d’une nouvelle année avec promotion des élèves et reprise des affectations.
 - Évaluations titrées, coefficients et barèmes libres.
 - Normalisation sur 10 ou 20, ou notation sur 20 imposée par l'administration.
 - Statuts absent, dispensé, non rendu et non noté.

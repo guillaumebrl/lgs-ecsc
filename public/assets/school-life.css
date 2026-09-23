@@ -1,0 +1,10 @@
+.quick-actions{display:flex;gap:8px}.school-life-students .quick-actions{justify-content:flex-start;margin:0}
+.school-life-students .quick-actions .button{padding:8px 12px}
+.attendance-entry-row td{background:#f4f9f8;padding:16px}
+.attendance-student-focus td{background:#e7f5f2;box-shadow:inset 0 1px #b9ddd6,inset 0 -1px #b9ddd6}
+.attendance-student-focus td:first-child{box-shadow:inset 4px 0 var(--teal),inset 0 1px #b9ddd6,inset 0 -1px #b9ddd6}
+.attendance-inline-form{display:grid;grid-template-columns:minmax(160px,1.2fr) repeat(2,minmax(150px,1fr)) minmax(150px,1fr) auto;gap:12px;align-items:end}
+.attendance-inline-form .check{align-self:center;margin-top:20px}
+.attendance-inline-form .quick-actions{align-items:end;flex-wrap:nowrap}
+@media(max-width:1000px){.attendance-inline-form{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.attendance-inline-form{grid-template-columns:1fr}.school-life-students .quick-actions{display:grid}.attendance-inline-form .check{margin-top:0}}

@@ -1,0 +1,3 @@
+.danger-button{font-size:0!important;min-width:42px;width:auto!important;padding:9px 12px!important}
+.danger-button::before{content:"\f5de";font-family:"bootstrap-icons";font-size:16px;line-height:1}
+.danger-button:hover{filter:brightness(.9)}

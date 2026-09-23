@@ -1,0 +1,25 @@
+.structure-tabs{display:flex;align-items:center;gap:9px;flex-wrap:wrap;width:100%;min-height:62px;margin:0 0 30px;padding:10px;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.structure-tabs a{padding:10px 14px;border-radius:9px;background:#e8edf3;color:var(--ink);text-decoration:none;font-weight:800;font-size:13px}
+.structure-tabs a.active{background:var(--navy);color:#fff}
+.structure-row{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
+.structure-row small,.period-row small{display:block;color:var(--muted);margin-top:4px}
+.structure-row-actions{display:flex;gap:7px;flex-wrap:wrap}.structure-row-actions button{padding:9px 11px}
+.period-row{display:flex;justify-content:space-between;gap:15px;padding:8px 12px;margin-left:15px;border-left:2px solid #b9ded8}
+.period-management-row,.subperiod-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-left:14px;padding:10px 0 10px 12px;border-left:2px solid #b9ded8}.period-management-row>span:first-child,.subperiod-row>span:first-child{flex:1;min-width:0}.period-management-row small,.subperiod-row small{display:block;margin-top:3px;color:var(--muted)}.subperiod-list{margin-left:20px}.subperiod-row{border-left-color:#d8e3e0;font-size:.92rem}.subperiod-create{margin:4px 0 14px 28px;padding:8px 12px;border:1px dashed var(--line);border-radius:9px}.subperiod-create summary{cursor:pointer;font-weight:700}.subperiod-create form{margin-top:12px}.school-years-layout .panel{min-width:0}
+.structure-edit{display:inline-block;margin-top:18px}
+.group-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 14px;margin-top:8px;border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none}
+.group-row small{display:block;color:var(--muted);margin-top:3px}
+.group-row.selected{border-color:var(--teal);background:#eef8f7}
+.student-checklist{display:grid;gap:8px;max-height:55vh;overflow:auto;margin:18px 0;padding-right:5px}
+.empty-state{position:sticky;top:18px}
+.assignment-intro{margin-bottom:20px}
+.assignment-intro p{max-width:850px}
+.assignment-layout{align-items:start}
+.assignment-card{border:1px solid var(--line);border-radius:10px;margin:10px 0;background:#fff}
+.assignment-card summary{display:flex;justify-content:space-between;gap:16px;padding:14px;cursor:pointer}
+.assignment-card summary small{display:block;color:var(--muted);margin-top:4px}
+.assignment-card .assignment-form{padding:14px;border-top:1px solid var(--line)}
+.assignment-form{display:grid;gap:12px}
+.assignment-form .form-row{margin:0}
+@media(max-width:700px){.structure-row,.period-row,.assignment-card summary{align-items:flex-start;flex-direction:column;gap:5px}.period-row{margin-left:0}.period-management-row,.subperiod-row{align-items:flex-start;flex-wrap:wrap;margin-left:0}.subperiod-list,.subperiod-create{margin-left:8px}}
+.danger-button{font-size:0!important;min-width:42px}.danger-button::before{content:"🗑️";font-size:16px;line-height:1}.danger-button:hover{filter:brightness(.9)}

@@ -1,0 +1,54 @@
+@import url("bulletin-print.css?v=30");
+@import url("document-print.css?v=93");
+:root {
+  --ink: #1d1e20;
+  --muted: #5f6873;
+  --line: #d5e4f1;
+  --paper: #ffffff;
+  --bg: #ebf4fc;
+  --navy: #2a5f91;
+  --teal: #2a5f91;
+  --gold: #ffffff;
+  --shadow: 0 12px 35px rgba(42, 95, 145, .10);
+}
+
+.sidebar { background: #2a5f91; }
+.sidebar nav a { color: #dceaf6; }
+.sidebar nav a:hover,
+.sidebar nav a.active { background: #1f4e78; color: #fff; }
+.sidebar-user { border-top-color: #5f88ad; }
+.sidebar-user small { color: #d4e4f2; }
+.sidebar-user a { color: #fff; }
+.hero { background: linear-gradient(125deg, #2a5f91, #1f4e78); }
+.hero p { color: #e6f1fa; }
+.badge,.tag { background: #ebf4fc; color: #2a5f91; }
+.button.secondary,button.secondary,.tabs button { background: #ebf4fc; color: #1d1e20; }
+.login-body { background: radial-gradient(circle at 15% 15%, #fff, transparent 35%), #2a5f91; }
+.student-spotlight { background: #2a5f91; }
+.student-spotlight .eyebrow { color: #dceaf6; }
+
+.brand { gap: 10px; }
+.brand-logo {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff;
+  padding: 3px;
+  flex: 0 0 auto;
+}
+.brand strong { line-height: 1.15; }
+.login-logo {
+  display: block;
+  width: 118px;
+  height: 118px;
+  object-fit: contain;
+  margin: 0 auto 24px;
+}
+.login-card { border-top: 5px solid #2a5f91; text-align: left; }
+.document-school-brand { display: flex; align-items: center; gap: 14px; }
+.document-logo { width: 72px; height: 72px; object-fit: contain; }
+
+@media(max-width:950px){.brand-logo{width:44px;height:44px}.brand{justify-content:center}}
+@media(max-width:620px){.brand-logo{width:42px;height:42px}.brand strong{display:none}}
+@media print{.document-logo{width:58px;height:58px}}

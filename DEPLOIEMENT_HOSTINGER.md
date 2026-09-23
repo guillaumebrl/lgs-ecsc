@@ -1,4 +1,4 @@
-# Déployer École Pilot depuis Git sur Hostinger
+# Déployer lgs-ecsc depuis Git sur Hostinger
 
 ## 1. Choisir l'offre
 
@@ -52,7 +52,7 @@ Configurez ensuite le document root sur `school-app-source/school-app/public`, o
 Créez `school-app/.env` à partir de `.env.example`, sans le placer dans `public` :
 
 ```dotenv
-APP_NAME="École Pilot"
+APP_NAME="lgs-ecsc"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://ecole.votre-domaine.fr
@@ -110,6 +110,76 @@ Avant de téléverser le code de cette version, sauvegardez la base puis importe
 
 Cette migration ajoute les qualifications cumulables des personnels, les groupes d'élèves et l'affectation d'un groupe à un cours. Après le déploiement, utilisez **Modifier → Comptes** pour vérifier les qualifications, puis **Modifier → Groupes** pour constituer les groupes et les associer aux cours.
 
+### Mise à jour 004 — Profil Direction
+
+Avant de téléverser le code de cette version, sauvegardez la base puis importez une seule fois dans phpMyAdmin :
+
+`database/migrations/004_direction_role.sql`
+
+Le profil Direction peut consulter toutes les classes, valider les bulletins individuellement ou en lot, et imprimer ou enregistrer un PDF par élève ou par classe. Il n'accède pas aux réglages administratifs, aux comptes ni à la structure.
+
+### Mise à jour 005 — Nom et prénom des comptes
+
+Avant de téléverser le code de cette version, sauvegardez la base puis importez une seule fois dans phpMyAdmin :
+
+`database/migrations/005_user_first_last_name.sql`
+
+Cette migration sépare le nom et le prénom des comptes. Pour éviter toute perte, l’ancien nom complet est placé dans le champ **Nom** ; après le déploiement, ouvrez **Comptes → Modifier les comptes** pour renseigner correctement le prénom des comptes existants. Ne relancez pas cette migration après son exécution réussie.
+
+### Mise à jour 006 — N° INE facultatif
+
+Avant de téléverser le code de cette version, sauvegardez la base puis importez une seule fois dans phpMyAdmin :
+
+`database/migrations/006_optional_ine.sql`
+
+Cette migration remplace l’ancien matricule par un N° INE facultatif. Elle permet de créer un élève avant l’obtention de son INE, puis de compléter cette information ultérieurement depuis sa fiche. Ne relancez pas cette migration après son exécution réussie.
+
+### Mise à jour 007 — Affectations pédagogiques
+
+Avant de téléverser le code de cette version, sauvegardez la base puis importez une seule fois dans phpMyAdmin :
+
+`database/migrations/007_teaching_assignments.sql`
+
+Cette migration ajoute à chaque affectation un coefficient de matière et un ordre d’affichage sur le bulletin. Les affectations existantes sont conservées et reprennent automatiquement le coefficient par défaut de leur matière. Après le déploiement, utilisez **Structure → Affectations** pour attribuer les classes ou groupes aux enseignants et co-professeurs. Ne relancez pas cette migration après son exécution réussie.
+
+### Mise à jour 008 — Refonte lgs-ecsc
+
+Sauvegardez la base puis importez une seule fois dans phpMyAdmin, avant de téléverser le nouveau code :
+
+`database/migrations/008_lgs_ecsc_core.sql`
+
+Cette migration ajoute les qualifications cumulables Direction et Vie scolaire, l’obligation de changement de mot de passe et l’ordre pédagogique des niveaux. Les comptes et données existants sont conservés. Après le déploiement, reconnectez-vous et vérifiez les qualifications depuis **Comptes**. Ne relancez pas cette migration après son exécution réussie.
+
+### Mise à jour 009 — Adresse e-mail facultative
+
+Sauvegardez la base puis importez une seule fois dans phpMyAdmin, avant de téléverser le nouveau code :
+
+`database/migrations/009_optional_account_email.sql`
+
+Cette migration sépare l’identifiant de connexion de l’adresse e-mail. Pour chaque compte existant, l’adresse actuelle devient automatiquement son identifiant de connexion. L’adresse e-mail peut ensuite être supprimée ou laissée vide depuis **Comptes**. Ne relancez pas cette migration après son exécution réussie.
+
+### Mise à jour 010 — Ordre simplifié des niveaux
+
+Après la migration 009, importez une seule fois dans phpMyAdmin :
+
+`database/migrations/010_simple_level_order.sql`
+
+### Mise à jour v40 — cycles scolaires
+
+Après sauvegarde de la base, importez une seule fois :
+
+`database/migrations/011_education_stage.sql`
+
+Cette migration ajoute aux niveaux le cycle Maternelle, Primaire ou Collège et initialise automatiquement les niveaux existants.
+
+Cette migration renumérote les niveaux de chaque année scolaire à partir de 1, selon leur ordre actuel, et remplace l’ancienne valeur technique 100. L’ordre peut ensuite être réglé simplement entre 1 et 12 dans **Structure → Classes**.
+
+### Mise à jour v71 — génération PDF sur le serveur
+
+Cette mise à jour ne nécessite aucune migration SQL. Téléversez et extrayez l’archive complète en remplaçant les fichiers existants. Le dossier `vendor` doit impérativement être copié : il contient le moteur PDF Dompdf déjà installé, il n'est donc pas nécessaire d'exécuter Composer sur Hostinger.
+
+Vérifiez que le site utilise PHP 8.1 ou une version plus récente avec les extensions DOM, Iconv et Mbstring activées. Les boutons **Télécharger le PDF** génèrent désormais directement les bulletins et relevés de notes individuels ou par classe, sans passer par la fenêtre d'impression du navigateur.
+
 ## 9. Contrôles après déploiement
 
 - HTTPS est forcé et aucune alerte de certificat n'apparaît.
@@ -124,3 +194,21 @@ Cette migration ajoute les qualifications cumulables des personnels, les groupes
 ## 10. GitHub Actions (optionnel)
 
 Pour automatiser le déploiement, le plus simple reste l'intégration Git de Hostinger. N'ajoutez pas de mots de passe FTP ou SSH au dépôt : placez-les uniquement dans les secrets du fournisseur Git. Pour une application manipulant des données scolaires, imposez une branche protégée et une validation humaine avant production.
+
+## 11. Sauvegarde nocturne de la base
+
+La solution recommandée est d'activer les sauvegardes automatiques de Hostinger dans **Sites web → Tableau de bord → Fichiers → Sauvegardes**. Pour disposer en plus d'une copie SQL indépendante :
+
+1. Créez avec le gestionnaire de fichiers un dossier hors de `public_html`, par exemple `/home/u123456789/backups/lgs-ecsc`.
+2. Ajoutez dans le `.env` de production :
+
+   ```env
+   BACKUP_DIR=/home/u123456789/backups/lgs-ecsc
+   BACKUP_RETENTION_DAYS=14
+   ```
+
+3. Dans **Sites web → Tableau de bord → Avancé → Tâches Cron**, créez une tâche de type **PHP** pointant vers le chemin absolu de `scripts/backup_database.php`.
+4. Programmez-la chaque jour à `01:00` UTC, soit `02:00` en France l'hiver et `03:00` l'été. Hostinger planifie les tâches Cron en UTC.
+5. Lancez d'abord un test, puis contrôlez **Voir la sortie**. Le message doit indiquer le chemin d'un fichier `lgs-ecsc-AAAA-MM-JJ_HH-MM-SS.sql.gz`.
+
+Le script n'est exécutable qu'en ligne de commande, réutilise les identifiants MySQL du `.env`, refuse d'écrire dans le dossier public et supprime automatiquement les copies plus anciennes que la durée de rétention. Téléchargez régulièrement une copie sur un support extérieur à Hostinger et testez une restauration sur une base de test.

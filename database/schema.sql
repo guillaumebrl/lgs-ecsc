@@ -4,18 +4,25 @@ CREATE TABLE IF NOT EXISTS settings (
   school_address VARCHAR(255) NULL,
   grading_mode ENUM('flexible','forced_20') NOT NULL DEFAULT 'flexible',
   decimals TINYINT UNSIGNED NOT NULL DEFAULT 2,
+  comment_max_length SMALLINT UNSIGNED NOT NULL DEFAULT 500,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT IGNORE INTO settings(id) VALUES(1);
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL DEFAULT '',
+  last_name VARCHAR(100) NOT NULL DEFAULT '',
   name VARCHAR(120) NOT NULL,
-  email VARCHAR(190) NOT NULL UNIQUE,
+  login_identifier VARCHAR(190) NOT NULL UNIQUE,
+  email VARCHAR(190) NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  role ENUM('admin','principal','teacher') NOT NULL,
+  role ENUM('admin','direction','principal','teacher') NOT NULL,
   can_teach BOOLEAN NOT NULL DEFAULT FALSE,
   can_be_principal BOOLEAN NOT NULL DEFAULT FALSE,
+  can_direction BOOLEAN NOT NULL DEFAULT FALSE,
+  can_school_life BOOLEAN NOT NULL DEFAULT FALSE,
+  must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -36,9 +43,19 @@ CREATE TABLE IF NOT EXISTS periods (
   ends_on DATE NOT NULL,
   entry_opens_on DATE NULL,
   entry_closes_on DATE NULL,
-  status ENUM('draft','open','closed','validated') NOT NULL DEFAULT 'draft',
+  status ENUM('open','closed') NOT NULL DEFAULT 'closed',
   sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
   CONSTRAINT fk_period_year FOREIGN KEY(school_year_id) REFERENCES school_years(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS period_subperiods (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  period_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  starts_on DATE NOT NULL,
+  ends_on DATE NOT NULL,
+  sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  CONSTRAINT fk_subperiod_period FOREIGN KEY(period_id) REFERENCES periods(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS classes (
@@ -46,10 +63,20 @@ CREATE TABLE IF NOT EXISTS classes (
   school_year_id BIGINT UNSIGNED NOT NULL,
   name VARCHAR(60) NOT NULL,
   level VARCHAR(60) NULL,
+  education_stage ENUM('preschool','primary','middle') NOT NULL DEFAULT 'primary',
+  sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1,
   principal_user_id BIGINT UNSIGNED NULL,
   UNIQUE KEY uq_class_year_name(school_year_id,name),
   FOREIGN KEY(school_year_id) REFERENCES school_years(id) ON DELETE CASCADE,
   FOREIGN KEY(principal_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS class_principals (
+  class_id BIGINT UNSIGNED NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  PRIMARY KEY(class_id,user_id),
+  FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS families (
@@ -83,7 +110,7 @@ CREATE TABLE IF NOT EXISTS guardians (
 
 CREATE TABLE IF NOT EXISTS students (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  registration_number VARCHAR(50) NOT NULL UNIQUE,
+  registration_number VARCHAR(50) NULL UNIQUE,
   last_name VARCHAR(100) NOT NULL,
   first_name VARCHAR(100) NOT NULL,
   birth_date DATE NULL,
@@ -130,6 +157,8 @@ CREATE TABLE IF NOT EXISTS courses (
   subject_id BIGINT UNSIGNED NOT NULL,
   group_name VARCHAR(80) NULL,
   class_group_id BIGINT UNSIGNED NULL,
+  assignment_coefficient DECIMAL(6,2) NOT NULL DEFAULT 1,
+  display_order SMALLINT UNSIGNED NOT NULL DEFAULT 100,
   UNIQUE KEY uq_course(class_id,subject_id,group_name),
   FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
   FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
