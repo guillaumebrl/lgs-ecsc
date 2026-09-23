@@ -1,2 +1,0 @@
-ALTER TABLE settings
-  ADD COLUMN comment_max_length SMALLINT UNSIGNED NOT NULL DEFAULT 500 AFTER decimals;
