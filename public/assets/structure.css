@@ -21,5 +21,6 @@
 .assignment-card .assignment-form{padding:14px;border-top:1px solid var(--line)}
 .assignment-form{display:grid;gap:12px}
 .assignment-form .form-row{margin:0}
-@media(max-width:700px){.structure-row,.period-row,.assignment-card summary{align-items:flex-start;flex-direction:column;gap:5px}.period-row{margin-left:0}.period-management-row,.subperiod-row{align-items:flex-start;flex-wrap:wrap;margin-left:0}.subperiod-list,.subperiod-create{margin-left:8px}}
+.assignment-edit-context{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));gap:8px;margin:-5px 0 18px;padding:12px;border:1px solid #b9ded8;border-radius:10px;background:#eef8f7}.assignment-edit-context span{min-width:0}.assignment-edit-context small{display:block;margin-bottom:3px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}.assignment-edit-context strong{display:block;overflow-wrap:anywhere;color:var(--ink)}
+@media(max-width:700px){.structure-row,.period-row,.assignment-card summary{align-items:flex-start;flex-direction:column;gap:5px}.period-row{margin-left:0}.period-management-row,.subperiod-row{align-items:flex-start;flex-wrap:wrap;margin-left:0}.subperiod-list,.subperiod-create{margin-left:8px}.assignment-edit-context{grid-template-columns:1fr}}
 .danger-button{font-size:0!important;min-width:42px}.danger-button::before{content:"🗑️";font-size:16px;line-height:1}.danger-button:hover{filter:brightness(.9)}
