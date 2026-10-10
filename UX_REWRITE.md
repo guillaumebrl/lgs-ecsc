@@ -4,7 +4,7 @@ Cette branche fait évoluer l’interface sans modifier le modèle de données e
 
 ## Changements livrés
 
-- changement de fonction accessible depuis chaque écran, avec retour à la page courante ;
+- changement de fonction centralisé sur le tableau de bord ;
 - navigation active cohérente pour les sous-écrans ;
 - recherche globale des élèves, évaluations et familles, limitée par les droits ;
 - tableau de bord orienté actions selon les responsabilités ;

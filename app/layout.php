@@ -15,13 +15,6 @@ function nav_active(string $name): string
     return in_array($page, $activePages, true) ? 'active' : '';
 }
 
-function current_relative_url(): string
-{
-    $query = $_SERVER['QUERY_STRING'] ?? '';
-
-    return 'index.php' . ($query !== '' ? '?' . $query : '');
-}
-
 function header_html(string $title): void
 {
     global $settings, $flash;
@@ -79,19 +72,6 @@ function header_html(string $title): void
                 <h1><?= e($title) ?></h1>
             </div>
             <div class="topbar-tools">
-                <?php if (!is_admin() && count(array_filter([has_capability('can_teach'), has_capability('can_be_principal'), has_capability('can_direction')])) > 1): ?>
-                    <form class="work-mode-quick" method="post">
-                        <input type="hidden" name="_token" value="<?= csrf() ?>">
-                        <input type="hidden" name="action" value="set_work_modes">
-                        <input type="hidden" name="return_to" value="<?= e(current_relative_url()) ?>">
-                        <label><span class="sr-only">Fonction active</span><select name="work_mode" data-auto-submit aria-label="Fonction active">
-                            <?php if (has_capability('can_teach')): ?><option value="teacher" <?= active_work_mode() === 'teacher' ? 'selected' : '' ?>>Enseignant</option><?php endif; ?>
-                            <?php if (has_capability('can_be_principal')): ?><option value="principal" <?= active_work_mode() === 'principal' ? 'selected' : '' ?>>Professeur principal</option><?php endif; ?>
-                            <?php if (has_capability('can_direction')): ?><option value="direction" <?= active_work_mode() === 'direction' ? 'selected' : '' ?>>Direction</option><?php endif; ?>
-                        </select></label>
-                        <noscript><button>Changer</button></noscript>
-                    </form>
-                <?php endif; ?>
                 <a class="global-search-link" href="?page=search" aria-label="Rechercher dans l’application">⌕ <span>Rechercher</span></a>
                 <div class="today"><?= date('d/m/Y') ?></div>
             </div>
