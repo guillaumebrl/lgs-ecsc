@@ -52,9 +52,15 @@ function render_assessment_gradebook_page(): never
             $assessment['class_group_id'],
         ]
     );
+    $courseAssessments = rows('SELECT id FROM assessments WHERE course_id=? ORDER BY assessment_date,id', [(int) $assessment['course_id']]);
+    $assessmentIds = array_map('intval', array_column($courseAssessments, 'id'));
+    $assessmentIndex = array_search((int) $assessment['id'], $assessmentIds, true);
+    $previousAssessmentId = $assessmentIndex !== false && $assessmentIndex > 0 ? $assessmentIds[$assessmentIndex - 1] : 0;
+    $nextAssessmentId = $assessmentIndex !== false && isset($assessmentIds[$assessmentIndex + 1]) ? $assessmentIds[$assessmentIndex + 1] : 0;
 
     header_html($assessment['title']);
     ?>
+    <nav class="student-stepper"><?php if ($previousAssessmentId): ?><a class="button secondary" href="?page=gradebook&amp;id=<?= $previousAssessmentId ?>">← Évaluation précédente</a><?php else: ?><span></span><?php endif; ?><?php if ($nextAssessmentId): ?><a class="button secondary" href="?page=gradebook&amp;id=<?= $nextAssessmentId ?>">Évaluation suivante →</a><?php endif; ?></nav>
     <section class="panel">
         <div class="panel-head">
             <div>
@@ -70,12 +76,12 @@ function render_assessment_gradebook_page(): never
             </div>
             <span class="tag"><?= e(period_status_label($assessment['period_status'])) ?></span>
         </div>
-        <form method="post">
+        <form method="post" data-dirty-guard>
             <input type="hidden" name="_token" value="<?= csrf() ?>">
             <input type="hidden" name="action" value="save_grades">
             <input type="hidden" name="assessment_id" value="<?= $assessment['id'] ?>">
             <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
-            <table class="grade-table">
+            <div class="table-wrap"><table class="grade-table">
                 <thead>
                 <tr>
                     <th>Élève</th>
@@ -118,8 +124,9 @@ function render_assessment_gradebook_page(): never
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
-            </table>
-            <div class="actions">
+            </table></div>
+            <div class="actions sticky-save">
+                <span class="save-state" aria-live="polite">Utilisez Entrée pour passer à la note suivante.</span>
                 <a class="button secondary" href="?page=grades">Retour</a>
                 <a class="button secondary" href="<?= e($returnTo) ?>">Retour au carnet de notes</a>
                 <button

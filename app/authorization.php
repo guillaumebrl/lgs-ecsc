@@ -38,6 +38,27 @@ function can_manage_council_scope(int $classId, int $studentId, int $periodId): 
     return (int) $statement->fetchColumn() > 0;
 }
 
+function can_view_student(int $studentId): bool
+{
+    if (management_mode_active()) {
+        return true;
+    }
+    if (!has_capability('can_teach') && !has_capability('can_be_principal')) {
+        return false;
+    }
+    $statement = db()->prepare(
+        'SELECT COUNT(DISTINCT e.student_id)
+         FROM enrollments e JOIN classes c ON c.id=e.class_id
+         LEFT JOIN class_principals cp ON cp.class_id=c.id AND cp.user_id=?
+         LEFT JOIN courses co ON co.class_id=c.id
+         LEFT JOIN course_teachers ct ON ct.course_id=co.id AND ct.user_id=?
+         WHERE e.student_id=? AND (cp.user_id IS NOT NULL OR (ct.user_id IS NOT NULL AND (co.class_group_id IS NULL OR EXISTS(SELECT 1 FROM group_students gs WHERE gs.group_id=co.class_group_id AND gs.student_id=e.student_id))))'
+    );
+    $statement->execute([user()['id'], user()['id'], $studentId]);
+
+    return (int) $statement->fetchColumn() > 0;
+}
+
 function can_manage_course(int $courseId): bool
 {
     if (direction_mode_active()) {

@@ -5,8 +5,21 @@ declare(strict_types=1);
 function nav_active(string $name): string
 {
     global $page;
+    $groups = [
+        'grades' => ['grades', 'gradebook', 'grade-notebook', 'comments'],
+        'students' => ['students', 'student-detail', 'student-profile', 'student-management', 'families'],
+        'documents' => ['documents', 'bulletin', 'bulletin-batch', 'report', 'report-batch'],
+    ];
+    $activePages = $groups[$name] ?? [$name];
 
-    return $page === $name ? 'active' : '';
+    return in_array($page, $activePages, true) ? 'active' : '';
+}
+
+function current_relative_url(): string
+{
+    $query = $_SERVER['QUERY_STRING'] ?? '';
+
+    return 'index.php' . ($query !== '' ? '?' . $query : '');
 }
 
 function header_html(string $title): void
@@ -39,7 +52,7 @@ function header_html(string $title): void
             <a class="<?= nav_active('grades') ?>" href="?page=grades">▦ <span>Évaluations</span></a>
             <?php if (principal_mode_active() || direction_mode_active()): ?>
                 <a class="<?= nav_active('council') ?>" href="?page=council">◫ <span>Conseil</span></a>
-                <a class="<?= nav_active('direction') ?>" href="?page=direction">✓ <span>Documents</span></a>
+                <a class="<?= nav_active('documents') ?>" href="?page=documents">✓ <span>Documents</span></a>
             <?php endif; ?>
             <?php if (school_life_mode_active()): ?>
                 <a class="<?= nav_active('school-life') ?>" href="?page=school-life">◷ <span>Vie scolaire</span></a>
@@ -65,7 +78,23 @@ function header_html(string $title): void
                 <p class="eyebrow"><?= e($settings['school_name']) ?></p>
                 <h1><?= e($title) ?></h1>
             </div>
-            <div class="today"><?= date('d/m/Y') ?></div>
+            <div class="topbar-tools">
+                <?php if (!is_admin() && count(array_filter([has_capability('can_teach'), has_capability('can_be_principal'), has_capability('can_direction')])) > 1): ?>
+                    <form class="work-mode-quick" method="post">
+                        <input type="hidden" name="_token" value="<?= csrf() ?>">
+                        <input type="hidden" name="action" value="set_work_modes">
+                        <input type="hidden" name="return_to" value="<?= e(current_relative_url()) ?>">
+                        <label><span class="sr-only">Fonction active</span><select name="work_mode" data-auto-submit aria-label="Fonction active">
+                            <?php if (has_capability('can_teach')): ?><option value="teacher" <?= active_work_mode() === 'teacher' ? 'selected' : '' ?>>Enseignant</option><?php endif; ?>
+                            <?php if (has_capability('can_be_principal')): ?><option value="principal" <?= active_work_mode() === 'principal' ? 'selected' : '' ?>>Professeur principal</option><?php endif; ?>
+                            <?php if (has_capability('can_direction')): ?><option value="direction" <?= active_work_mode() === 'direction' ? 'selected' : '' ?>>Direction</option><?php endif; ?>
+                        </select></label>
+                        <noscript><button>Changer</button></noscript>
+                    </form>
+                <?php endif; ?>
+                <a class="global-search-link" href="?page=search" aria-label="Rechercher dans l’application">⌕ <span>Rechercher</span></a>
+                <div class="today"><?= date('d/m/Y') ?></div>
+            </div>
         </header>
         <?php if ($flash): ?>
             <div class="alert <?= e($flash['type']) ?>"><?= e($flash['message']) ?></div>
@@ -77,11 +106,7 @@ function footer_html(): void
 {
     global $settings;
     ?>
-        <span class="user-role-marker" data-role="<?= e(user()['role']) ?>" hidden></span>
         <span class="settings-marker" data-comment-limit="<?= e($settings['comment_max_length'] ?? 500) ?>" hidden></span>
-        <?php if (user()['role'] === 'admin'): ?>
-            <span class="admin-marker" hidden></span>
-        <?php endif; ?>
         <link rel="stylesheet" href="assets/icons.css?v=60">
         <link rel="stylesheet" href="assets/unified-ui.css?v=103">
         <link rel="stylesheet" href="assets/password-toggle.css?v=105">

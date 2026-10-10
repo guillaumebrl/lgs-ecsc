@@ -28,7 +28,11 @@ function handle_work_mode_action(): void
     $_SESSION['work_mode'] = $mode;
     unset($_SESSION['work_mode_direction'], $_SESSION['work_mode_principal']);
     flash('Mode de travail mis à jour.');
-    redirect('index.php?page=dashboard');
+    $returnTo = (string) ($_POST['return_to'] ?? 'index.php?page=dashboard');
+    if (!str_starts_with($returnTo, 'index.php') && !str_starts_with($returnTo, '?')) {
+        $returnTo = 'index.php?page=dashboard';
+    }
+    redirect($returnTo);
 }
 
 function handle_application_actions(array $settings): void
@@ -152,7 +156,7 @@ function handle_application_actions(array $settings): void
         redirect('index.php?page=gradebook&id='.$assessment['id'].($returnTo !== '' ? '&return_to='.rawurlencode($returnTo) : ''));
     }
 
-    if (in_array($action, ['save_council', 'validate_council', 'unlock_council'], true)) {
+    if (in_array($action, ['save_council', 'validate_council', 'validate_council_next', 'unlock_council'], true)) {
         handle_council_action($action);
     }
 }
@@ -176,10 +180,13 @@ function handle_council_action(string $action): never
         db()->prepare('INSERT INTO councils(student_id,class_id,period_id,general_comment,mention,decision_text) VALUES(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE general_comment=VALUES(general_comment),mention=VALUES(mention),decision_text=VALUES(decision_text)')->execute([$studentId, $classId, $periodId, trim($_POST['general_comment']), trim($_POST['mention']), trim($_POST['decision_text'])]);
         audit('update', 'council', $studentId, $existing, $_POST);
         flash('Décision enregistrée.');
-    } elseif ($action === 'validate_council') {
+    } elseif (in_array($action, ['validate_council', 'validate_council_next'], true)) {
         db()->prepare('INSERT INTO councils(validated_by,student_id,class_id,period_id,validated_at) VALUES(?,?,?,?,NOW()) ON DUPLICATE KEY UPDATE validated_at=NOW(),validated_by=VALUES(validated_by)')->execute([user()['id'], $studentId, $classId, $periodId]);
         audit('validate', 'council', $studentId);
         flash('Bulletin validé. Il peut être déverrouillé si une correction est nécessaire.');
+        if ($action === 'validate_council_next' && (int) ($_POST['next_student_id'] ?? 0) > 0) {
+            redirect('index.php?page=council&class_id=' . $classId . '&period_id=' . $periodId . '&student_id=' . (int) $_POST['next_student_id']);
+        }
     } else {
         db()->prepare('UPDATE councils SET validated_at=NULL,validated_by=NULL WHERE student_id=? AND class_id=? AND period_id=?')->execute([$studentId, $classId, $periodId]);
         audit('unlock', 'council', $studentId, null, ['class_id' => $classId, 'period_id' => $periodId]);

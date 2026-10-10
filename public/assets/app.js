@@ -2,6 +2,47 @@ const passwordEyeIcon = visible => visible
   ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.359 11.238 15 12.879l-.707.707-13-13L2 .879l2.138 2.138A8.4 8.4 0 0 1 8 2c3.5 0 6.2 2.1 7.5 5a10.2 10.2 0 0 1-2.141 3.03L10.7 7.37A2.8 2.8 0 0 0 6.63 3.3L9.42 6.09A1.8 1.8 0 0 1 9.91 7.37l3.449 3.868zM8 12c-3.5 0-6.2-2.1-7.5-5a10.1 10.1 0 0 1 2.03-2.93l1.42 1.42A4.5 4.5 0 0 0 3.2 7c1.04 1.85 2.72 3 4.8 3 .5 0 .98-.07 1.42-.2L11 11.38A8.4 8.4 0 0 1 8 12z"/></svg>'
   : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2c3.5 0 6.2 2.1 7.5 5-1.3 2.9-4 5-7.5 5S1.8 9.9.5 7C1.8 4.1 4.5 2 8 2zm0 2C5.92 4 4.24 5.15 3.2 7 4.24 8.85 5.92 10 8 10s3.76-1.15 4.8-3C11.76 5.15 10.08 4 8 4zm0 1.2A1.8 1.8 0 1 1 8 8.8a1.8 1.8 0 0 1 0-3.6z"/></svg>';
 
+document.querySelectorAll('[data-auto-submit]').forEach(control => {
+  control.addEventListener('change', () => control.form?.requestSubmit());
+});
+
+document.querySelectorAll('[data-dirty-guard]').forEach(form => {
+  let dirty = false;
+  form.addEventListener('input', () => {
+    dirty = true;
+    const state = form.querySelector('.save-state');
+    if (state) state.textContent = 'Modifications non enregistrées';
+  });
+  form.addEventListener('submit', () => { dirty = false; });
+  window.addEventListener('beforeunload', event => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+});
+
+document.querySelectorAll('[data-character-count]').forEach(field => {
+  const counter = document.createElement('small');
+  counter.className = 'character-count';
+  const update = () => { counter.textContent = `${field.value.length} / ${field.maxLength}`; };
+  field.insertAdjacentElement('afterend', counter);
+  field.addEventListener('input', update);
+  update();
+});
+
+document.querySelector('[data-check-all]')?.addEventListener('change', event => {
+  document.querySelectorAll('[data-row-check]').forEach(checkbox => { checkbox.checked = event.target.checked; });
+});
+
+document.querySelectorAll('.grade-table input[type="number"]').forEach((input, index, inputs) => {
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    inputs[index + 1]?.focus();
+    inputs[index + 1]?.select();
+  });
+});
+
 document.querySelectorAll('input[type="password"]').forEach(input => {
   if (input.closest('.password-field')) return;
   const wrapper = document.createElement('span');
@@ -189,12 +230,6 @@ document.querySelectorAll('[data-account-qualifications]').forEach(group => {
   admin?.addEventListener('change', updateQualifications);
   updateQualifications();
 });
-document.querySelectorAll('.sidebar a[href="?page=direction"]').forEach(link => {
-  link.href = '?page=documents';
-  const label = link.querySelector('span');
-  if (label) label.textContent = 'Documents';
-  if (new URLSearchParams(location.search).get('page') === 'documents') link.classList.add('active');
-});
 document.querySelectorAll('select[name="class_id"] option').forEach(option => {
   option.textContent = option.textContent
     .replace(/^\s*\d{4}-\d{4}\s*·\s*/, '')
@@ -261,26 +296,8 @@ if (new URLSearchParams(location.search).get('page') === 'school-life') {
     }));
   }
 }
-const roleMarker = document.querySelector('.user-role-marker');
-if (!document.querySelector('.admin-marker')) document.querySelector('input[name="action"][value="prepare_school_year"]')?.closest('form')?.remove();
 const commentLimit = Number(document.querySelector('.settings-marker')?.dataset.commentLimit || 500);
 document.querySelectorAll('textarea[name^="comments["]').forEach(textarea => textarea.maxLength = commentLimit);
-if (new URLSearchParams(location.search).get('page') === 'settings') {
-  const settingsForm = document.querySelector('input[name="action"][value="save_settings"]')?.closest('form');
-  const submit = settingsForm?.querySelector('button');
-  if (settingsForm && submit && !settingsForm.querySelector('[name="comment_max_length"]')) {
-    const label = document.createElement('label');
-    label.innerHTML = `Longueur maximale des appréciations<input required type="number" min="50" max="2000" name="comment_max_length" value="${commentLimit}"><small>Entre 50 et 2 000 caractères</small>`;
-    settingsForm.insertBefore(label, submit);
-  }
-}
-if (roleMarker?.dataset.role === 'principal' && !document.querySelector('.sidebar a[href="?page=grades"]')) {
-  const myStudentsLink = document.querySelector('.sidebar a[href="?page=my-students"]');
-  const gradesLink = document.createElement('a');
-  gradesLink.href = '?page=grades';
-  gradesLink.innerHTML = '▦ <span>Évaluations et notes</span>';
-  myStudentsLink?.after(gradesLink);
-}
 if (new URLSearchParams(location.search).get('page') === 'grade-notebook') {
   document.querySelector('.sidebar a[href="?page=grades"]')?.classList.add('active');
 
