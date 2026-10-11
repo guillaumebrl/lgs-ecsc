@@ -16,7 +16,7 @@ function handle_direction_actions(): void
         return;
     }
     $action = $_POST['action'] ?? '';
-    if (!in_array($action, ['direction_validate_student','direction_validate_class','direction_unvalidate_student','direction_unvalidate_class'], true)) {
+    if (!in_array($action, ['direction_validate_student','direction_validate_class','direction_unvalidate_student','direction_unvalidate_class','direction_validate_selected','direction_unvalidate_selected'], true)) {
         return;
     }
     require_direction();
@@ -26,7 +26,26 @@ function handle_direction_actions(): void
         http_response_code(403);
         exit('Accès interdit');
     }
-    if ($action === 'direction_unvalidate_student') {
+    if (in_array($action, ['direction_validate_selected', 'direction_unvalidate_selected'], true)) {
+        $studentIds = array_values(array_unique(array_filter(array_map('intval', $_POST['student_ids'] ?? []))));
+        $allowedStudents = rows('SELECT student_id FROM enrollments WHERE class_id=?', [$classId]);
+        $allowedIds = array_map('intval', array_column($allowedStudents, 'student_id'));
+        $studentIds = array_values(array_intersect($studentIds, $allowedIds));
+        if (!$studentIds) {
+            flash('Sélectionnez au moins un bulletin.', 'error');
+        } elseif ($action === 'direction_validate_selected') {
+            $statement = db()->prepare('INSERT INTO councils(student_id,class_id,period_id,validated_at,validated_by) VALUES(?,?,?,NOW(),?) ON DUPLICATE KEY UPDATE validated_at=NOW(),validated_by=VALUES(validated_by)');
+            foreach ($studentIds as $studentId) {
+                $statement->execute([$studentId, $classId, $periodId, user()['id']]);
+                audit('validate', 'council', $studentId, null, ['class_id' => $classId, 'period_id' => $periodId]);
+            }
+            flash(count($studentIds) . ' bulletin(s) validé(s).');
+        } else {
+            $placeholders = implode(',', array_fill(0, count($studentIds), '?'));
+            db()->prepare("UPDATE councils SET validated_at=NULL,validated_by=NULL WHERE class_id=? AND period_id=? AND student_id IN ($placeholders)")->execute([$classId, $periodId, ...$studentIds]);
+            flash(count($studentIds) . ' bulletin(s) rouvert(s).');
+        }
+    } elseif ($action === 'direction_unvalidate_student') {
         $studentId = (int)$_POST['student_id'];
         db()->prepare('UPDATE councils SET validated_at=NULL,validated_by=NULL WHERE student_id=? AND class_id=? AND period_id=?')->execute([$studentId,$classId,$periodId]);
         audit('unlock', 'council', $studentId, null, ['class_id' => $classId,'period_id' => $periodId]);

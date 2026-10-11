@@ -5,8 +5,14 @@ declare(strict_types=1);
 function nav_active(string $name): string
 {
     global $page;
+    $groups = [
+        'grades' => ['grades', 'gradebook', 'grade-notebook', 'comments'],
+        'students' => ['students', 'student-detail', 'student-profile', 'student-management', 'families'],
+        'documents' => ['documents', 'bulletin', 'bulletin-batch', 'report', 'report-batch'],
+    ];
+    $activePages = $groups[$name] ?? [$name];
 
-    return $page === $name ? 'active' : '';
+    return in_array($page, $activePages, true) ? 'active' : '';
 }
 
 function header_html(string $title): void
@@ -23,6 +29,9 @@ function header_html(string $title): void
         <link rel="stylesheet" href="assets/branding.css?v=93">
         <link rel="stylesheet" href="assets/accounts.css?v=25">
         <link rel="stylesheet" href="assets/structure.css?v=25">
+        <link rel="stylesheet" href="assets/icons.css?v=110">
+        <link rel="stylesheet" href="assets/unified-ui.css?v=110">
+        <link rel="stylesheet" href="assets/password-toggle.css?v=110">
     </head>
     <body>
     <aside class="sidebar">
@@ -39,7 +48,7 @@ function header_html(string $title): void
             <a class="<?= nav_active('grades') ?>" href="?page=grades">▦ <span>Évaluations</span></a>
             <?php if (principal_mode_active() || direction_mode_active()): ?>
                 <a class="<?= nav_active('council') ?>" href="?page=council">◫ <span>Conseil</span></a>
-                <a class="<?= nav_active('direction') ?>" href="?page=direction">✓ <span>Documents</span></a>
+                <a class="<?= nav_active('documents') ?>" href="?page=documents">✓ <span>Documents</span></a>
             <?php endif; ?>
             <?php if (school_life_mode_active()): ?>
                 <a class="<?= nav_active('school-life') ?>" href="?page=school-life">◷ <span>Vie scolaire</span></a>
@@ -65,7 +74,10 @@ function header_html(string $title): void
                 <p class="eyebrow"><?= e($settings['school_name']) ?></p>
                 <h1><?= e($title) ?></h1>
             </div>
-            <div class="today"><?= date('d/m/Y') ?></div>
+            <div class="topbar-tools">
+                <a class="global-search-link" href="?page=search" aria-label="Rechercher dans l’application">⌕ <span>Rechercher</span></a>
+                <div class="today"><?= date('d/m/Y') ?></div>
+            </div>
         </header>
         <?php if ($flash): ?>
             <div class="alert <?= e($flash['type']) ?>"><?= e($flash['message']) ?></div>
@@ -77,14 +89,7 @@ function footer_html(): void
 {
     global $settings;
     ?>
-        <span class="user-role-marker" data-role="<?= e(user()['role']) ?>" hidden></span>
         <span class="settings-marker" data-comment-limit="<?= e($settings['comment_max_length'] ?? 500) ?>" hidden></span>
-        <?php if (user()['role'] === 'admin'): ?>
-            <span class="admin-marker" hidden></span>
-        <?php endif; ?>
-        <link rel="stylesheet" href="assets/icons.css?v=60">
-        <link rel="stylesheet" href="assets/unified-ui.css?v=103">
-        <link rel="stylesheet" href="assets/password-toggle.css?v=105">
         <footer>lgs-ecsc · gestion scolaire sécurisée</footer>
     </main>
     <script src="assets/app.js?v=105"></script>

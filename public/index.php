@@ -37,7 +37,7 @@ $modules = [
     'student_management', 'direction', 'structure', 'accounts',
     'my_students', 'school_life', 'reports', 'grades', 'grade_notebook',
     'dashboard', 'comments', 'documents', 'council', 'settings',
-    'assessment_gradebook',
+    'assessment_gradebook', 'search', 'student_profile',
 ];
 foreach ($modules as $module) {
     require $appDirectory . '/' . $module . '.php';
@@ -83,6 +83,8 @@ $routes = [
     'council' => 'render_council_page',
     'settings' => 'render_settings_page',
     'gradebook' => 'render_assessment_gradebook_page',
+    'search' => 'render_search_page',
+    'student-profile' => 'render_student_profile_page',
 ];
 
 if ($page === 'direction') {

@@ -53,3 +53,7 @@ Le guide détaillé se trouve dans [`DEPLOIEMENT_HOSTINGER.md`](DEPLOIEMENT_HOST
 ## Important avant une utilisation réelle
 
 Cette livraison est un socle MVP. Avant de l'utiliser avec de vraies données scolaires, prévoir une recette métier, une revue de sécurité, des sauvegardes testées, la conformité réglementaire du pays, ainsi qu'un véritable moteur PDF côté serveur si des archives PDF binaires immuables sont exigées. La version actuelle produit une mise en page A4 que le navigateur enregistre en PDF.
+
+## Évolution de l’expérience utilisateur
+
+La branche `codex/ux-rewrite` conserve le socle métier et réorganise les parcours autour des tâches quotidiennes. Le détail des changements et la recette recommandée se trouvent dans [`UX_REWRITE.md`](UX_REWRITE.md).
