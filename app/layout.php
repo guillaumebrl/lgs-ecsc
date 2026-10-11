@@ -29,6 +29,9 @@ function header_html(string $title): void
         <link rel="stylesheet" href="assets/branding.css?v=93">
         <link rel="stylesheet" href="assets/accounts.css?v=25">
         <link rel="stylesheet" href="assets/structure.css?v=25">
+        <link rel="stylesheet" href="assets/icons.css?v=110">
+        <link rel="stylesheet" href="assets/unified-ui.css?v=110">
+        <link rel="stylesheet" href="assets/password-toggle.css?v=110">
     </head>
     <body>
     <aside class="sidebar">
@@ -87,9 +90,6 @@ function footer_html(): void
     global $settings;
     ?>
         <span class="settings-marker" data-comment-limit="<?= e($settings['comment_max_length'] ?? 500) ?>" hidden></span>
-        <link rel="stylesheet" href="assets/icons.css?v=60">
-        <link rel="stylesheet" href="assets/unified-ui.css?v=103">
-        <link rel="stylesheet" href="assets/password-toggle.css?v=105">
         <footer>lgs-ecsc · gestion scolaire sécurisée</footer>
     </main>
     <script src="assets/app.js?v=105"></script>
