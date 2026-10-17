@@ -81,14 +81,39 @@ document.querySelector('[data-filter-table]')?.addEventListener('input', event =
   const q = event.target.value.toLowerCase();
   document.querySelectorAll('[data-table] tbody tr').forEach(row => row.hidden = !row.textContent.toLowerCase().includes(q));
 });
+document.querySelectorAll('table').forEach(table => {
+  table.querySelectorAll('thead th').forEach((header, column) => {
+    if (header.querySelector('[data-sort-column]')) return;
+    const label = header.textContent.trim();
+    if (!['élève', 'nom', 'niveau'].includes(label.toLocaleLowerCase('fr'))) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'table-sort';
+    button.dataset.sortColumn = String(column);
+    button.append(document.createTextNode(`${label} `));
+    const indicator = document.createElement('span');
+    indicator.setAttribute('aria-hidden', 'true');
+    indicator.textContent = '↕';
+    button.append(indicator);
+    header.replaceChildren(button);
+    table.setAttribute('data-sortable-table', '');
+  });
+});
 document.querySelectorAll('[data-sortable-table]').forEach(table => {
   table.querySelectorAll('[data-sort-column]').forEach(button => button.addEventListener('click', () => {
     const column = Number(button.dataset.sortColumn);
     const numeric = button.dataset.sortType === 'number';
     const direction = button.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
     const body = table.tBodies[0];
-    const rows = [...body.rows];
-    rows.sort((left, right) => {
+    const allRows = [...body.rows];
+    const groups = [];
+    const trailingRows = [];
+    allRows.forEach(row => {
+      if (row.cells.length > column && !row.querySelector('.empty')) groups.push([row]);
+      else if (groups.length && row.cells.length === 1 && row.cells[0].colSpan > 1) groups.at(-1).push(row);
+      else trailingRows.push(row);
+    });
+    groups.sort(([left], [right]) => {
       const leftValue = left.cells[column]?.dataset.sortValue ?? left.cells[column]?.textContent.trim() ?? '';
       const rightValue = right.cells[column]?.dataset.sortValue ?? right.cells[column]?.textContent.trim() ?? '';
       const comparison = numeric
@@ -106,7 +131,7 @@ document.querySelectorAll('[data-sortable-table]').forEach(table => {
     button.setAttribute('aria-sort', direction === 'asc' ? 'ascending' : 'descending');
     const indicator = button.querySelector('span');
     if (indicator) indicator.textContent = direction === 'asc' ? '↑' : '↓';
-    rows.forEach(row => body.appendChild(row));
+    groups.flat().concat(trailingRows).forEach(row => body.appendChild(row));
   }));
 });
 document.querySelectorAll('.grade-table input[type=number]').forEach(input => {
@@ -155,6 +180,13 @@ const bindCouncilControls = () => {
   document.querySelector('[data-council-class]')?.addEventListener('change', event => loadCouncilSelection(event.target,true));
   document.querySelector('[data-council-period]')?.addEventListener('change', event => loadCouncilSelection(event.target));
   document.querySelector('[data-council-student]')?.addEventListener('change', event => loadCouncilSelection(event.target));
+  document.querySelectorAll('[data-council-student-link]').forEach(link => link.addEventListener('click', event => {
+    const studentSelect = document.querySelector('[data-council-student]');
+    if (!studentSelect) return;
+    event.preventDefault();
+    studentSelect.value = link.dataset.studentId;
+    loadCouncilSelection(studentSelect);
+  }));
   document.querySelector('[data-council-decision]')?.addEventListener('submit', async event => {
     if (!document.body.classList.contains('projector')) return;
     event.preventDefault();

@@ -210,9 +210,9 @@ function render_families_page(): never
           <form class="panel" method="post">
             <h2>Ajouter un élève à cette famille</h2>
             <input type="hidden" name="_token" value="<?=csrf()?>"><input type="hidden" name="action" value="add_family_student"><input type="hidden" name="family_id" value="<?=$familyId?>">
-            <label>N° INE <small>(facultatif)</small><input name="registration_number"></label>
-            <div class="form-row"><label>Nom<input required name="last_name"></label><label>Prénom<input required name="first_name"></label></div>
-            <div class="form-row"><label>Date de naissance <small>(facultative)</small><input type="date" name="birth_date"></label><label>Classe<select required name="class_id"><?php foreach ($classes as $class):?><option value="<?=$class['id']?>"><?=e($class['name'].' · '.$class['year_name'])?></option><?php endforeach?></select></label></div>
+            <label>N° INE<input name="registration_number"></label>
+            <div class="form-row"><label><span>Nom <span class="required-marker" aria-hidden="true">*</span></span><input required name="last_name"></label><label><span>Prénom <span class="required-marker" aria-hidden="true">*</span></span><input required name="first_name"></label></div>
+            <div class="form-row"><label>Date de naissance <small>(facultative)</small><input type="date" name="birth_date"></label><label><span>Niveau <span class="required-marker" aria-hidden="true">*</span></span><select required name="class_id"><?php foreach ($classes as $class):?><option value="<?=$class['id']?>"><?=e($class['name'].' · '.$class['year_name'])?></option><?php endforeach?></select></label></div>
             <button>Ajouter l’élève</button>
           </form>
         </section>

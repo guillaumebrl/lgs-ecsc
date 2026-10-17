@@ -48,7 +48,7 @@ function render_documents_page(): never
     header_html('Documents');
     ?>
     <link rel="stylesheet" href="assets/student-management.css?v=29">
-    <link rel="stylesheet" href="assets/direction.css?v=29">
+    <link rel="stylesheet" href="assets/direction.css?v=30">
     <nav class="student-section-nav">
         <a class="button <?= $section === 'bulletins' ? '' : 'secondary' ?>" href="?page=documents&amp;section=bulletins">Bulletins</a>
         <a class="button <?= $section === 'reports' ? '' : 'secondary' ?>" href="?page=documents&amp;section=reports">Relevés de notes</a>
@@ -71,7 +71,7 @@ function render_documents_page(): never
             <?php if ($validated): ?><?= document_validation_form('direction_unvalidate_class', $classId, $periodId, null, 'Tout dévalider', true) ?><?php endif; ?>
         <?php else: ?><a class="button secondary" href="?page=report-batch-pdf<?= $query ?>">Télécharger le PDF du niveau</a><?php endif; ?>
         </div></div>
-        <div class="table-wrap"><table><thead><tr><?php if ($section === 'bulletins'): ?><th><input type="checkbox" data-check-all aria-label="Tout sélectionner"></th><?php endif; ?><th>Élève</th><?php if ($section === 'bulletins'): ?><th>Appréciation du conseil</th><th>Mention / décision</th><th>État</th><?php endif; ?><th>Document</th><?php if ($section === 'bulletins'): ?><th>Validation</th><?php endif; ?></tr></thead><tbody>
+        <div class="table-wrap"><table class="documents-table <?= $section === 'bulletins' ? 'bulletins-table' : '' ?>"><thead><tr><?php if ($section === 'bulletins'): ?><th><input type="checkbox" data-check-all aria-label="Tout sélectionner"></th><?php endif; ?><th>Élève</th><?php if ($section === 'bulletins'): ?><th>Appréciation du conseil</th><th>Mention / décision</th><th>État</th><?php endif; ?><th>Document</th><?php if ($section === 'bulletins'): ?><th>Validation</th><?php endif; ?></tr></thead><tbody>
         <?php foreach ($visibleStudents as $student): ?><tr><?php if ($section === 'bulletins'): ?><td><input type="checkbox" name="student_ids[]" value="<?= $student['id'] ?>" form="bulk-documents" data-row-check aria-label="Sélectionner <?= e($student['first_name'].' '.$student['last_name']) ?>"></td><?php endif; ?><td><strong><a href="?page=student-profile&amp;id=<?= $student['id'] ?>"><?= e($student['last_name'].' '.$student['first_name']) ?></a></strong></td>
             <?php if ($section === 'bulletins'): ?><td class="document-council-comment"><?= e($student['general_comment'] ?: '—') ?></td><td><?= e($student['mention'] ?: '—') ?><small><?= e($student['decision_text'] ?: '') ?></small></td><td><span class="tag"><?= $student['validated_at'] ? 'Validé' : 'À valider' ?></span></td><td><a href="?page=bulletin&amp;class_id=<?= $classId ?>&amp;period_id=<?= $periodId ?>&amp;student_id=<?= $student['id'] ?>">Ouvrir le bulletin</a></td><td><?= document_validation_form($student['validated_at'] ? 'direction_unvalidate_student' : 'direction_validate_student', $classId, $periodId, (int) $student['id'], $student['validated_at'] ? 'Dévalider' : 'Valider', (bool) $student['validated_at']) ?></td>
             <?php else: ?><td><a href="?page=report<?= $query ?>&amp;student_id=<?= $student['id'] ?>">Ouvrir le relevé</a></td><?php endif; ?>

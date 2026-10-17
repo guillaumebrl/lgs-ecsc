@@ -63,6 +63,18 @@ function period_status_label(string $status): string
     };
 }
 
+function grade_status_label(?string $status): string
+{
+    return match($status) {
+        'absent' => 'Absent',
+        'excused' => 'Dispensé',
+        'missing' => 'Non rendu',
+        'not_graded' => 'Non noté',
+        null, '' => '',
+        default => $status,
+    };
+}
+
 function display_decimal(mixed $value, int $precision = 2): string
 {
     $formatted = number_format((float)$value, max(0, $precision), '.', '');

@@ -30,7 +30,7 @@ function header_html(string $title): void
         <link rel="stylesheet" href="assets/accounts.css?v=25">
         <link rel="stylesheet" href="assets/structure.css?v=25">
         <link rel="stylesheet" href="assets/icons.css?v=110">
-        <link rel="stylesheet" href="assets/unified-ui.css?v=110">
+        <link rel="stylesheet" href="assets/unified-ui.css?v=111">
         <link rel="stylesheet" href="assets/password-toggle.css?v=110">
     </head>
     <body>
@@ -92,7 +92,7 @@ function footer_html(): void
         <span class="settings-marker" data-comment-limit="<?= e($settings['comment_max_length'] ?? 500) ?>" hidden></span>
         <footer>lgs-ecsc · gestion scolaire sécurisée</footer>
     </main>
-    <script src="assets/app.js?v=105"></script>
+    <script src="assets/app.js?v=106"></script>
     </body>
     </html>
     <?php

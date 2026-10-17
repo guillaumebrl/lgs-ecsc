@@ -1,4 +1,8 @@
 /.env
 /storage/logs/*.log
 /storage/bulletins/*.html
-
+.DS_Store
+*.zip
+__pycache__/
+*.py[cod]
+/scripts/inject_triade_grades_into_lgs.sql
